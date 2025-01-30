@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChatWave</title>
+
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      height: 100vh;
+      background: linear-gradient(-45deg, rgb(0, 14, 34), #0d0d24, #08002efa, #012831);
+      background-size: 300% 300%;
+      animation: moveGradient 30s infinite alternate ease-in-out;
+      position: relative;
+    }
+
+    @keyframes moveGradient {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      100% {
+        background-position: 100% 50%;
+      }
+    }
+
+    .star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: white;
+      border-radius: 50%;
+      opacity: 1;
+      animation: twinkle 10s infinite ease-in-out;
+      will-change: transform; /* Improves performance */
+      transition: transform 0.2 ease-out;
+
+      z-index: 5;
+    }
+
+    @keyframes twinkle {
+
+      0%,
+      100% {
+        opacity: 0.3;
+        /* transform: scale(1); */
+      }
+
+      50% {
+        opacity: 2;
+        /* transform: scale(1.2); */
+      }
+    }
+
+    #messages {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      color: white;
+      z-index: 10;
+      padding: 1rem;
+      margin: 1rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message {
+      background: rgba(255, 255, 255, 0.021);
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 0.5rem;
+      display: inline-block;
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+
+    .scroll-x {
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 495px) {
+      .scroll-x {
+        display: flex;
+        flex-wrap: nowrap;
+      }
+
+      body{
+        background-size: 110% 300%;
+        background: linear-gradient(70deg, rgb(0, 14, 34), #0d0d24, #08002efa, #012831f6, rgba(2, 24, 66, 0.959));
+      }
+    }
+  </style>
+</head>
+
+<body class="relative flex flex-col justify-end h-screen">
+  <div id="messages" class="z-10"></div>
+
+  <div class="fixed bottom-0 left-0 w-full flex p-4 bg-black bg-opacity-70 z-10 scroll-x">
+    <input type="email" id="email-input" placeholder="Enter your email..."
+      class="flex-grow p-2 bg-white bg-opacity-10 text-white rounded-lg outline-none mr-2">
+    <input type="text" id="message-input" placeholder="Type your message..."
+      class="flex-grow p-2 bg-white bg-opacity-10 text-white rounded-lg outline-none">
+    <button id="send-button" class="ml-4 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500">Send</button>
+  </div>
+
+  <script>
+    const socket = io();
+
+    const messagesDiv = document.getElementById('messages');
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+    const emailInput = document.getElementById('email-input');
+
+    let email = '';
+
+    function addMessage(username, message) {
+      const messageElement = document.createElement('div');
+      messageElement.classList.add('message');
+      messageElement.textContent = `${username}: ${message}`;
+      messagesDiv.appendChild(messageElement);
+    }
+
+    socket.on('receive_message', (data) => {
+      addMessage(data.username, data.message);
+    });
+
+    sendButton.addEventListener('click', () => {
+      const message = messageInput.value.trim();
+
+      if (message && email) {
+        socket.emit('send_message', { email: email, message: message });
+        messageInput.value = '';
+      }
+    });
+
+    messageInput.addEventListener('keypress', (event) => {
+      if (event.key === 'Enter') {
+        sendButton.click();
+      }
+    });
+
+    emailInput.addEventListener('change', () => {
+      email = emailInput.value.trim();
+      if (email) {
+        emailInput.disabled = true;
+      }
+    });
+
+    // Function to create stars
+    function createStars(count) {
+      for (let i = 0; i < count; i++) {
+        let star = document.createElement("div");
+        star.className = "star";
+        star.style.top = Math.random() * 100 + "vh";
+        star.style.left = Math.random() * 100 + "vw";
+        star.style.animationDuration = (Math.random() * 2 + 1) + "s"; // Random twinkle speed
+        document.body.appendChild(star);
+      }
+    }
+
+    // Create 100 stars
+    createStars(100);
+
+    // Parallax effect on mouse move
+    document.addEventListener("mousemove", (event) => {
+      console.log("Mouse moved!"); // Debugging: Confirm the event is firing
+
+      let stars = document.querySelectorAll(".star");
+      console.log(`Stars found: ${stars.length}`); // Debugging: Confirm stars are selected
+
+      if (stars.length === 0) {
+        console.error("No stars found!"); // Debugging: No stars are being selected
+        return;
+      }
+
+      // Calculate mouse position relative to the center of the screen
+      let moveX = (event.clientX / window.innerWidth - 0.5) * 40; // Adjust multiplier for sensitivity
+      let moveY = (event.clientY / window.innerHeight - 0.5) * 30;
+
+      // Apply parallax effect to each star
+      stars.forEach((star, index) => {
+        let depth = (index % 5) + 1; // Different speeds for depth effect
+        let translateX = moveX * (depth / 5);
+        let translateY = moveY * (depth / 5);
+        star.style.transform = `translate(${translateX}px, ${translateY}px)`;
+        console.log(`Star ${index} moved by: ${translateX}px, ${translateY}px`); // Debugging: Confirm transform values
+      });
+    });
+  </script>
+</body>
+
+</html>

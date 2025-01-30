@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Starlight Parallax Effect</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: linear-gradient(240deg, #030336ef, #021241);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 2s infinite ease-in-out;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    .gradient {
+      position: absolute;
+      width: 300%;
+      height: 300%;
+      background: radial-gradient(circle at center, rgba(0, 0, 0, 0), rgba(11, 26, 32, 0.788), rgba(0, 0, 0, 0), rgba(8, 8, 8, 0.959));
+      animation: move 80s infinite linear;
+      pointer-events: none;
+    }
+
+    @keyframes move {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(-33%, -33%); }
+    }
+  </style>
+</head>
+<body>
+  <div class="gradient"></div>
+  <script>
+    const numStars = 100;
+    for (let i = 0; i < numStars; i++) {
+      const star = document.createElement('div');
+      star.classList.add('star');
+      star.style.left = `${Math.random() * 100}vw`;
+      star.style.top = `${Math.random() * 100}vh`;
+      star.style.animationDuration = `${Math.random() * 2 + 1}s`;
+      document.body.appendChild(star);
+    }
+
+    document.addEventListener('mousemove', (event) => {
+      const mouseX = event.clientX / window.innerWidth;
+      const mouseY = event.clientY / window.innerHeight;
+      
+      document.querySelectorAll('.star').forEach(star => {
+        const x = (mouseX - 0.5) * 30;
+        const y = (mouseY - 0.5) * 30;
+        
+        star.style.transform = `translate(${x}px, ${y}px)`;
+      });
+    });
+  </script>
+</body>
+</html>
