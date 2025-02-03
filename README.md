@@ -10,7 +10,8 @@ i. Downlooad the folder as it is
 ii. Then you need to download and install XAMP(for database) from <a href="https://www.apachefriends.org/download.html"> here </a> (install it by default i.e do not change anything during intallation period just keep clicking next)
 
 iii. Open Xamp and start <b>Apache</b> and <b>MySQL</b> as shown
-![alt text](image.png)
+![image](https://github.com/user-attachments/assets/2a253458-d8cf-41f9-9d50-80f0d44e2bc3)
+
 
 iv. Then run <b>app.py</b> and go to http://127.0.0.1:5000/
 
@@ -26,7 +27,8 @@ vii. And create following Couloumns:-
     d) Password
     
 like this
-![alt text](image-1.png)
+![image](https://github.com/user-attachments/assets/07fe14b7-2b83-4a59-9a5c-89f96533646b)
+
 
 Note:- you may need to enter first data in database manually on http://localhost/phpmyadmin
 
